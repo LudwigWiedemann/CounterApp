@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/navigations"
+    app:startDestination="@id/counterFragment">
+
+    <fragment
+        android:id="@+id/counterFragment"
+        android:name="com.googletutorial.jcounter.counter.CounterFragment"
+        android:label="CounterFragment" >
+        <action
+            android:id="@+id/action_counterFragment_to_overviewFragment"
+            app:destination="@id/overviewFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/overviewFragment"
+        android:name="com.googletutorial.jcounter.overview.OverviewFragment"
+        android:label="overview_fragment"
+        tools:layout="@layout/overview_fragment" >
+        <action
+            android:id="@+id/action_overviewFragment_to_counterFragment"
+            app:destination="@id/counterFragment" />
+    </fragment>
+</navigation>

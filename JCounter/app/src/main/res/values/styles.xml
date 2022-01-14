@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="style_tv_date" parent="Widget.AppCompat.TextView">
+        <item name="android:textSize">15sp</item>
+    </style>
+
+    <style name="style_tv_description_big" parent="Widget.AppCompat.TextView">
+        <item name="android:textSize">30sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="style_tv_description_small" parent="Widget.AppCompat.TextView">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+
+    <style name="style_tv_counter_small" parent="Widget.AppCompat.TextView">
+        <item name="android:textSize">50sp</item>
+        <item name="android:textStyle">bold</item>
+
+    </style>
+
+    <style name="style_tv_counter_big" parent="Widget.AppCompat.TextView">
+        <item name="android:textSize">200sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+</resources>
