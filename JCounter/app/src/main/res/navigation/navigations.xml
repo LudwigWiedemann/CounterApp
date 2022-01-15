@@ -11,7 +11,9 @@
         android:label="CounterFragment" >
         <action
             android:id="@+id/action_counterFragment_to_overviewFragment"
-            app:destination="@id/overviewFragment" />
+            app:destination="@id/overviewFragment"
+            app:popUpTo="@id/counterFragment"
+            app:popUpToInclusive="false" />
     </fragment>
     <fragment
         android:id="@+id/overviewFragment"
@@ -20,6 +22,7 @@
         tools:layout="@layout/overview_fragment" >
         <action
             android:id="@+id/action_overviewFragment_to_counterFragment"
-            app:destination="@id/counterFragment" />
+            app:destination="@id/counterFragment"
+            app:popUpTo="@id/navigations" />
     </fragment>
 </navigation>

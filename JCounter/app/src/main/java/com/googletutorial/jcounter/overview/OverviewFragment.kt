@@ -1,22 +1,16 @@
 package com.googletutorial.jcounter.overview
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.NavHostFragment
-import androidx.recyclerview.widget.RecyclerView
 import com.googletutorial.jcounter.R
 import com.googletutorial.jcounter.common.DatabaseHelper
 import com.googletutorial.jcounter.common.ItemAdapter
-import com.googletutorial.jcounter.counter.CounterViewModel
-import com.googletutorial.jcounter.counter.CounterViewModelFactory
-import com.googletutorial.jcounter.databinding.CounterFragmentBinding
 import com.googletutorial.jcounter.databinding.OverviewFragmentBinding
 
 class OverviewFragment : Fragment() {
@@ -40,8 +34,8 @@ class OverviewFragment : Fragment() {
         viewModel = ViewModelProvider(this, viewModelFactory).get(OverviewViewModel::class.java)
         val recyclerView = binding.recyclerView
         val dataset = viewModel.getDatasetForAdapter()
-        recyclerView.adapter = ItemAdapter(dataset, requireContext())
-
+        recyclerView.adapter =
+            ItemAdapter(dataset, requireContext(), recyclerView, NavHostFragment.findNavController(this))
         // Use this setting to improve performance if you know that changes
         // in content do not change the layout size of the RecyclerView
         recyclerView.setHasFixedSize(true)
