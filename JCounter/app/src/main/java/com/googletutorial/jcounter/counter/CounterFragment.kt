@@ -38,7 +38,7 @@ class CounterFragment : Fragment() {
         val dbHelper = DatabaseHelper(requireContext())
         val viewModelFactory = CounterViewModelFactory(dbHelper, dayEntry)
         viewModel = ViewModelProvider(this, viewModelFactory)[CounterViewModel::class.java]
-//
+
         binding.btnPlus.setOnClickListener {
             viewModel.increaseCount()
         }

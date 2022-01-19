@@ -48,24 +48,33 @@ class CounterViewModel(
         if (dbHelper.dbHasValues()) {
             val latestEntry = dbHelper.getLatestEntry()
             if (latestEntry.isFromToday()) {
-                Log.i(TAG, "On init the latest Entry is from ${latestEntry.dateTime}")
+                Log.i(TAG, "On init the latest Entry is from today: ${latestEntry.dateTime}")
                 return
             } else {
                 val todaysDate = LocalDateTime.now()
                 val lastEntriesDate = latestEntry.dateTime
-                var timeDifferenceBetweenDates =
-                    Duration.between(lastEntriesDate, todaysDate).toDays()
-                Log.i(TAG, "TimeDifference is $timeDifferenceBetweenDates")
-
-                while (timeDifferenceBetweenDates-- > 0) {
-                    val dateForNewEntry = todaysDate.minusDays(timeDifferenceBetweenDates)
+                var timeDifference =
+                    getTimeDifferenceBetweenDates(lastEntriesDate, todaysDate)
+                while (timeDifference >= 0) {
+                    val dateForNewEntry = todaysDate.minusDays(timeDifference)
                     val newEntry = DayEntry(dateForNewEntry, 0, 0)
                     dbHelper.addNewEntryToDb(newEntry)
+                    timeDifference--
                 }
             }
         } else {
             dbHelper.addNewEntryToDb(DayEntry(LocalDateTime.now(), 0, 0))
         }
+    }
+
+    private fun getTimeDifferenceBetweenDates(
+        lastEntriesDate: LocalDateTime,
+        todaysDate: LocalDateTime?
+    ): Long {
+        var timeDifferenceBetweenDates =
+            Duration.between(lastEntriesDate, todaysDate).toDays()
+        Log.i(TAG, "TimeDifference is $timeDifferenceBetweenDates")
+        return timeDifferenceBetweenDates
     }
 
     fun updateDatabase() {
@@ -78,7 +87,7 @@ class CounterViewModel(
     }
 
     companion object {
-        val TAG = "CounterViewModel"
+        const val TAG = "CounterViewModel"
     }
 
 }
