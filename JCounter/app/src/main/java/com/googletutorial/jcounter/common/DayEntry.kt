@@ -7,12 +7,10 @@ data class DayEntry(
     val id: Int?,
     val dateTime: LocalDateTime,
     var count: Int,
-    var totalCount: Int
 ){
     constructor(
         date: LocalDateTime,
-        count: Int,
-        totalCount: Int) : this(null, date, count, totalCount)
+        count: Int) : this(null, date, count)
 
     fun isFromToday(): Boolean {
         return getDateFromLocalDateTime(dateTime) == LocalDate.now()
