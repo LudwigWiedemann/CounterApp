@@ -19,7 +19,7 @@
         tools:context=".counter.CounterFragment">
 
         <TextView
-            android:id="@+id/tv_today_count"
+            android:id="@+id/tv_count"
             style="@style/style_tv_counter_big"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
@@ -95,7 +95,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/today_count"
-            app:layout_constraintBottom_toTopOf="@+id/tv_today_count"
+            app:layout_constraintBottom_toTopOf="@+id/tv_count"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 

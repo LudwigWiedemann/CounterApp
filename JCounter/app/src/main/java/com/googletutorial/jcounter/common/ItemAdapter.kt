@@ -2,13 +2,16 @@ package com.googletutorial.jcounter.common
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.TextView
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
 import com.googletutorial.jcounter.R
+import java.time.LocalDateTime
 
 class ItemAdapter(
     private val dataset: ArrayList<DayEntry>,
@@ -57,10 +60,16 @@ class ItemAdapter(
             val itemPosition: Int = recyclerView.getChildLayoutPosition(p0!!)
             val entry: DayEntry = dataset[itemPosition]
             val bundle = Bundle()
-            bundle.putParcelable("dayEntry", entry)
+            bundle.putInt("id", entry.id!!)
+            bundle.putString("dateString", getDateStringFromDate(entry.dateTime))
+            bundle.putInt("count", entry.count)
+            Log.i("OnItemClickListener", "id: ${entry.id}, dateString: ${getDateStringFromDate(entry.dateTime)}, count: ${entry.count}" )
             navController.navigate(R.id.action_overviewFragment_to_counterFragment, bundle)
         }
     }
+
+    private fun getDateStringFromDate(d: LocalDateTime) =
+        "${d.dayOfWeek}, ${d.dayOfMonth}. ${d.month} ${d.year}"
 
     private fun addLeadingZero(text: String): String {
         return if (text.length <= 1) {

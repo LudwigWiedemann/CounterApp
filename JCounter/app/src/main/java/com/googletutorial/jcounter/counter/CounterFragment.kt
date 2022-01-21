@@ -11,13 +11,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.NavHostFragment
 import com.googletutorial.jcounter.R
 import com.googletutorial.jcounter.common.DatabaseHelper
-import com.googletutorial.jcounter.common.DayEntry
 import com.googletutorial.jcounter.databinding.CounterFragmentBinding
-import java.time.LocalDateTime
 
 class CounterFragment : Fragment() {
     private lateinit var binding: CounterFragmentBinding
     private lateinit var viewModel: CounterViewModel
+    private var totalCount = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -29,21 +28,41 @@ class CounterFragment : Fragment() {
             container,
             false
         )
-        var dayEntry: DayEntry? = null
+        var iDateString = ""
+        var iDayEntryId = -1
+        var iCount = -1
         try {
-            dayEntry = requireArguments().getParcelable("dayEntry")
-        } catch (e: RuntimeException) {
-            Log.d(TAG, "no Entry passed to the Fragment: $e")
+            with(requireArguments()) {
+                iDayEntryId = getInt("id")
+                iDateString = getString("dateString")!!
+                iCount = getInt("count")
+                Log.i(TAG, "id: $iDayEntryId, dateString: $iDateString, count: $iCount" )
+
+            }
+        }catch (e:IllegalStateException) {
+            Log.i(TAG, "The Fragment has been started without a bundle $e")
+        }catch (e: RuntimeException) {
+            Log.d(TAG, "in CounterFragment.onCreate: $e")
         }
         val dbHelper = DatabaseHelper(requireContext())
-        val viewModelFactory = CounterViewModelFactory(dbHelper, dayEntry)
+        val viewModelFactory = CounterViewModelFactory(dbHelper, iDayEntryId, iDateString, iCount)
+
         viewModel = ViewModelProvider(this, viewModelFactory)[CounterViewModel::class.java]
+
+        totalCount = viewModel.getTotalJCount()
+        binding.tvTotalCount.text = totalCount.toString()
+        binding.tvDate.text = viewModel.dateString
+
 
         binding.btnPlus.setOnClickListener {
             viewModel.increaseCount()
+            totalCount ++
+            binding.tvTotalCount.text = totalCount.toString()
         }
         binding.btnMinus.setOnClickListener {
             viewModel.decreaseCount()
+            totalCount --
+            binding.tvTotalCount.text = totalCount.toString()
         }
 
         binding.btnOverview.setOnClickListener {
@@ -51,17 +70,12 @@ class CounterFragment : Fragment() {
             navController.navigate(R.id.action_counterFragment_to_overviewFragment)
         }
 
-        viewModel.dayEntry.observe(viewLifecycleOwner, { dE ->
-            binding.tvTotalCount.text = dE.totalCount.toString()
-            binding.tvTodayCount.text = dE.count.toString()
-            binding.tvDate.text = getDateStringFromDate(dE.dateTime)
+        viewModel.count.observe(viewLifecycleOwner, { count ->
+            binding.tvCount.text = count.toString()
             viewModel.updateDatabase()
         })
         return binding.root
     }
-
-    private fun getDateStringFromDate(d: LocalDateTime) =
-        "${d.dayOfWeek}, ${d.dayOfMonth}. ${d.month} ${d.year}"
 
     override fun onResume() {
         super.onResume()
@@ -70,8 +84,7 @@ class CounterFragment : Fragment() {
 
     private fun refresh() {
         with(viewModel) {
-            bringDbUpToDate()
-            refreshDayEntry()
+            fillDbUntilNow()
         }
     }
 
@@ -81,7 +94,6 @@ class CounterFragment : Fragment() {
     }
 
     companion object {
-        fun newInstance() = CounterFragment()
         const val TAG = "CounterFragment"
     }
 }

@@ -6,84 +6,109 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.googletutorial.jcounter.common.DatabaseHelper
 import com.googletutorial.jcounter.common.DayEntry
+import java.lang.Exception
 import java.time.Duration
 import java.time.LocalDateTime
 
 class CounterViewModel(
     private val dbHelper: DatabaseHelper,
-    dE: DayEntry?
+    private var dayEntryId: Int,
+    var dateString: String,
+    iCount: Int
 ) : ViewModel() {
 
+    private val _count = MutableLiveData<Int>()
+    val count: LiveData<Int>
+    get() = _count
+
     init {
-        bringDbUpToDate()
+        fillDbUntilNow()
+        if (dayEntryId == -1) {
+            with(getLatestEntry()) {
+                dayEntryId = id!!
+                dateString = getDateStringFromDate(dateTime)
+                _count.value = count
+            }
+        } else {
+            _count.value = iCount
+        }
     }
 
-    private val _dayEntry = MutableLiveData(dE ?: dbHelper.getLatestEntry())
-    val dayEntry: LiveData<DayEntry>
-        get() = _dayEntry
-
     fun increaseCount() {
-        var dayEntry: DayEntry
-        with(_dayEntry.value!!) {
-            val nId = id
-            val nDateTime = dateTime
-            val nCount = ++count
-            val nTotalCountAllOtherEntries = ++totalCount
-            dayEntry = DayEntry(nId, nDateTime, nCount, nTotalCountAllOtherEntries)
-        }
-        _dayEntry.value = dayEntry
+        _count.value = _count.value!! + 1
     }
 
     fun decreaseCount() {
-        with(_dayEntry.value!!) {
-            val nId = id
-            val nDateTime = dateTime
-            val nCount = --count
-            val nTotalCountAllOtherEntries = --totalCount
-            _dayEntry.value = DayEntry(nId, nDateTime, nCount, nTotalCountAllOtherEntries)
-        }
+        _count.value = _count.value!! - 1
     }
 
-    fun bringDbUpToDate() {
+    fun fillDbUntilNow() {
         if (dbHelper.dbHasValues()) {
-            val latestEntry = dbHelper.getLatestEntry()
+            val latestEntry = getLatestEntry()
             if (latestEntry.isFromToday()) {
-                Log.i(TAG, "On init the latest Entry is from today: ${latestEntry.dateTime}")
+                Log.i(TAG, "On init the latest Entry is from today: ${latestEntry.dateTime}. No entries created")
                 return
             } else {
                 val todaysDate = LocalDateTime.now()
                 val lastEntriesDate = latestEntry.dateTime
                 var timeDifference =
                     getTimeDifferenceBetweenDates(lastEntriesDate, todaysDate)
-                while (timeDifference >= 0) {
-                    val dateForNewEntry = todaysDate.minusDays(timeDifference)
-                    val newEntry = DayEntry(dateForNewEntry, 0, 0)
-                    dbHelper.addNewEntryToDb(newEntry)
-                    timeDifference--
+                Log.i(
+                    TAG,
+                    "The time difference is $timeDifference days."
+                )
+                if (timeDifference > 0) {
+                    while (timeDifference > 0) {
+                        val dateForNewEntry = todaysDate.minusDays(timeDifference - 1)
+                        val newEntry = DayEntry(dateForNewEntry, 0, 0)
+                        dbHelper.addNewEntryToDb(newEntry)
+//                        Log.i(
+//                            TAG,
+//                            "DB was not up to date. The time difference was $timeDifference days."
+//                        )
+                        timeDifference--
+                    }
+                } else {
+                    while (timeDifference <= 0) {
+//                        Log.i(
+//                            TAG,
+//                            "DB was not up to date. The time difference was $timeDifference days."
+//                        )
+                        try {
+                            dbHelper.deleteLatestEntry()
+                        } catch (e: Exception) {
+                            Log.e(TAG, e.toString())
+                        }
+                        timeDifference++
+                    }
                 }
             }
-        } else {
+        }
+        if (!dbHelper.dbHasValues()) {
             dbHelper.addNewEntryToDb(DayEntry(LocalDateTime.now(), 0, 0))
         }
+
     }
+
+    fun getTotalJCount(): Int {
+        return dbHelper.getTotalJCountFromDB()
+    }
+
+    fun updateDatabase() {
+        dbHelper.updateCountForEntryWithId(count.value!!, dayEntryId)
+    }
+
+    private fun getDateStringFromDate(d: LocalDateTime) =
+        "${d.dayOfWeek}, ${d.dayOfMonth}. ${d.month} ${d.year}"
+
+    private fun getLatestEntry() = dbHelper.getLatestEntry()
 
     private fun getTimeDifferenceBetweenDates(
         lastEntriesDate: LocalDateTime,
         todaysDate: LocalDateTime?
     ): Long {
-        var timeDifferenceBetweenDates =
-            Duration.between(lastEntriesDate, todaysDate).toDays()
-        Log.i(TAG, "TimeDifference is $timeDifferenceBetweenDates")
-        return timeDifferenceBetweenDates
-    }
-
-    fun updateDatabase() {
-        dbHelper.updateTodaysEntryInDb(_dayEntry.value!!)
-    }
-
-    fun refreshDayEntry() {
-        val id =  _dayEntry.value!!.id
-        _dayEntry.value = dbHelper.getEntryFromId(id)
+        //        Log.i(TAG, "TimeDifference is $timeDifferenceBetweenDates")
+        return Duration.between(lastEntriesDate, todaysDate).toDays()
     }
 
     companion object {

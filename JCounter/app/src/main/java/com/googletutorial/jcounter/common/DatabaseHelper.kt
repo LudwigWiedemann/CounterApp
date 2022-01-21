@@ -1,6 +1,5 @@
 package com.googletutorial.jcounter.common
 
-import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
@@ -14,7 +13,6 @@ import java.util.*
 class DatabaseHelper(context: Context) :
     SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
-    @SuppressLint("Recycle")
     fun getTotalJCountFromDB(): Int {
         try {
             val cursor = readableDatabase.query(
@@ -97,15 +95,20 @@ class DatabaseHelper(context: Context) :
         writableDatabase.insert(TABLE_NAME, null, values)
     }
 
-    fun updateTodaysEntryInDb(updatedEntry: DayEntry) {
+    fun updateCountForEntryWithId(count: Int, id: Int) {
         val values = ContentValues()
-        values.put(COLUMN_COUNTER, updatedEntry.count)
+        values.put(COLUMN_COUNTER, count)
         writableDatabase.update(
             TABLE_NAME,
             values,
             "$COLUMN_ID = ?",
-            arrayOf(updatedEntry.id.toString())
+            arrayOf(id.toString())
         )
+    }
+
+    fun deleteLatestEntry() {
+        writableDatabase.execSQL("DELETE FROM $TABLE_NAME WHERE $COLUMN_ID = (SELECT MAX($COLUMN_ID) FROM $TABLE_NAME)")
+        Log.i(TAG, "Latest entry deleted ")
     }
 
     fun getEntryFromId(id: Int?): DayEntry? {
