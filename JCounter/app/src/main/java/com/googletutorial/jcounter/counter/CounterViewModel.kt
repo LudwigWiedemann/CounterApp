@@ -60,7 +60,7 @@ class CounterViewModel(
                 if (timeDifference > 0) {
                     while (timeDifference > 0) {
                         val dateForNewEntry = todaysDate.minusDays(timeDifference - 1)
-                        val newEntry = DayEntry(dateForNewEntry, 0, 0)
+                        val newEntry = DayEntry(dateForNewEntry, 0)
                         dbHelper.addNewEntryToDb(newEntry)
 //                        Log.i(
 //                            TAG,
@@ -85,7 +85,7 @@ class CounterViewModel(
             }
         }
         if (!dbHelper.dbHasValues()) {
-            dbHelper.addNewEntryToDb(DayEntry(LocalDateTime.now(), 0, 0))
+            dbHelper.addNewEntryToDb(DayEntry(LocalDateTime.now(), 0, ))
         }
 
     }

@@ -64,7 +64,7 @@ class DatabaseHelper(context: Context) :
         return DayEntry(
             LocalDateTime.of(0, Month.AUGUST, 1, 0, 0, 0),
             0,
-            0)
+            )
     }
 
     fun dbHasValues(): Boolean {
@@ -154,7 +154,7 @@ class DatabaseHelper(context: Context) :
 
                 val month = Month.of(monthInt)
                 val date = LocalDateTime.of(year, month, dayOfMonth, hour, minute, second)
-                list.add(DayEntry(id, date, counter, getTotalJCountFromDB()))
+                list.add(DayEntry(id, date, counter))
             }
         }
         return list
@@ -176,12 +176,12 @@ class DatabaseHelper(context: Context) :
 
                 val month = Month.of(monthInt)
                 val date = LocalDateTime.of(year, month, dayOfMonth, hour, minute, second)
-                entry = DayEntry(id, date, counter, getTotalJCountFromDB())
+                entry = DayEntry(id, date, counter)
             }
             return entry
         } else {
             Log.i(TAG, "Could not find entries in the database")
-            return DayEntry(LocalDateTime.now(), 0, getTotalJCountFromDB())
+            return DayEntry(LocalDateTime.now(), 0)
         }
     }
 
