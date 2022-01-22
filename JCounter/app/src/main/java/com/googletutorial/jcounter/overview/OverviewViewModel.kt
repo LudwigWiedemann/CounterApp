@@ -12,6 +12,11 @@ class OverviewViewModel(private val dbHelper: DatabaseHelper) : ViewModel() {
         return dbHelper.getAllEntriesFromDb()
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        dbHelper.closeDb()
+    }
+
     companion object {
         const val TAG = "OverviewViewModel"
     }

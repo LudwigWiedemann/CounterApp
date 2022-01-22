@@ -13,6 +13,77 @@ import java.util.*
 class DatabaseHelper(context: Context) :
     SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
+    fun addEntryToDbForDate(dateTime: LocalDateTime) {
+        val values = ContentValues().apply {
+            with(dateTime) {
+                put(COLUMN_DAYOFMONTH, dayOfMonth)
+                put(COLUMN_MONTH, month.value)
+                put(COLUMN_YEAR, year)
+                put(COLUMN_HOUR, hour)
+                put(COLUMN_MINUTE, minute)
+                put(COLUMN_SECOND, second)
+                put(COLUMN_COUNTER, 0)
+            }
+        }
+        writableDatabase.insert(TABLE_NAME, null, values)
+    }
+
+    fun updateCountForEntryWithId(count: Int, id: Int) {
+        val values = ContentValues()
+        values.put(COLUMN_COUNTER, count)
+        writableDatabase.update(
+            TABLE_NAME,
+            values,
+            "$COLUMN_ID = ?",
+            arrayOf(id.toString())
+        )
+    }
+
+    fun getLatestEntry(): DayEntry {
+        return try {
+            val cursor = readableDatabase.query(TABLE_NAME, null, null, null, null, null, "$COLUMN_ID DESC", "1")
+            getLastEntryFromCursor(cursor)
+        } catch (e: RuntimeException) {
+            Log.e(TAG, "could not execute query in DB: $e")
+            DayEntry(
+                LocalDateTime.of(0, Month.AUGUST, 1, 0, 0, 0),
+                0,
+            )
+        }
+    }
+
+    fun getAllEntriesFromDb(): ArrayList<DayEntry> {
+        val cursor = readableDatabase.query(
+            TABLE_NAME,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "$COLUMN_ID DESC",
+            null
+        )
+        return getAllEntriesFromCursor(cursor)
+    }
+
+    fun deleteLatestEntry() {
+        writableDatabase.execSQL("DELETE FROM $TABLE_NAME WHERE $COLUMN_ID = (SELECT MAX($COLUMN_ID) FROM $TABLE_NAME)")
+        Log.i(TAG, "Latest entry deleted ")
+    }
+
+    fun dbHasValues(): Boolean {
+        val cursor = readableDatabase.query(
+            TABLE_NAME,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+        )
+        return cursor.moveToFirst()
+    }
+
     fun getTotalJCountFromDB(): Int {
         try {
             val cursor = readableDatabase.query(
@@ -35,109 +106,6 @@ class DatabaseHelper(context: Context) :
         return 0
     }
 
-    fun getLatestEntry(): DayEntry {
-        try {
-            val cursor = readableDatabase.query(
-                TABLE_NAME,
-                arrayOf(
-                    COLUMN_ID,
-                    COLUMN_DAYOFMONTH,
-                    COLUMN_MONTH,
-                    COLUMN_YEAR,
-                    COLUMN_HOUR,
-                    COLUMN_MINUTE,
-                    COLUMN_SECOND,
-                    COLUMN_COUNTER
-                ),
-                null,
-                null,
-                null,
-                null,
-                "$COLUMN_ID DESC",
-                "1"
-            )
-            Log.i(TAG, getLastEntryFromCursor(cursor).count.toString())
-            return getLastEntryFromCursor(cursor)
-        } catch (e: RuntimeException) {
-            Log.e(TAG, "could not execute query in DB: $e")
-        }
-        return DayEntry(
-            LocalDateTime.of(0, Month.AUGUST, 1, 0, 0, 0),
-            0,
-            )
-    }
-
-    fun dbHasValues(): Boolean {
-        val cursor = readableDatabase.query(
-            TABLE_NAME,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-        )
-        return cursor.moveToFirst()
-    }
-
-    fun addNewEntryToDb(newEntry: DayEntry) {
-        val values = ContentValues().apply {
-            with(newEntry) {
-                put(COLUMN_DAYOFMONTH, dateTime.dayOfMonth)
-                put(COLUMN_MONTH, dateTime.month.value)
-                put(COLUMN_YEAR, dateTime.year)
-                put(COLUMN_HOUR, dateTime.hour)
-                put(COLUMN_MINUTE, dateTime.minute)
-                put(COLUMN_SECOND, dateTime.second)
-                put(COLUMN_COUNTER, count)
-            }
-        }
-        writableDatabase.insert(TABLE_NAME, null, values)
-    }
-
-    fun updateCountForEntryWithId(count: Int, id: Int) {
-        val values = ContentValues()
-        values.put(COLUMN_COUNTER, count)
-        writableDatabase.update(
-            TABLE_NAME,
-            values,
-            "$COLUMN_ID = ?",
-            arrayOf(id.toString())
-        )
-    }
-
-    fun deleteLatestEntry() {
-        writableDatabase.execSQL("DELETE FROM $TABLE_NAME WHERE $COLUMN_ID = (SELECT MAX($COLUMN_ID) FROM $TABLE_NAME)")
-        Log.i(TAG, "Latest entry deleted ")
-    }
-
-    fun getEntryFromId(id: Int?): DayEntry? {
-        val cursor = readableDatabase.query(
-            TABLE_NAME,
-            null,
-            "$COLUMN_ID = ?",
-            arrayOf(id.toString()),
-            null,
-            null,
-            null,
-            null
-        )
-        return  getLastEntryFromCursor(cursor)
-    }
-
-    fun getAllEntriesFromDb(): ArrayList<DayEntry> {
-        val cursor = readableDatabase.query(
-            TABLE_NAME,
-            null,
-            null,
-            null,
-            null,
-            null,
-            "$COLUMN_ID DESC",
-            null
-        )
-        return getAllEntriesFromCursor(cursor)
-    }
 
     private fun getAllEntriesFromCursor(cursor: Cursor?): ArrayList<DayEntry> {
         val list = arrayListOf<DayEntry>()
@@ -183,6 +151,11 @@ class DatabaseHelper(context: Context) :
             Log.i(TAG, "Could not find entries in the database")
             return DayEntry(LocalDateTime.now(), 0)
         }
+    }
+
+    fun closeDb() {
+        readableDatabase.close()
+        writableDatabase.close()
     }
 
     override fun onCreate(db: SQLiteDatabase) {

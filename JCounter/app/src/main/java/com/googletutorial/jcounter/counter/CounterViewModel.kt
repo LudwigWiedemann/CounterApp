@@ -49,45 +49,39 @@ class CounterViewModel(
                 Log.i(TAG, "On init the latest Entry is from today: ${latestEntry.dateTime}. No entries created")
                 return
             } else {
-                val todaysDate = LocalDateTime.now()
-                val lastEntriesDate = latestEntry.dateTime
-                var timeDifference =
-                    getTimeDifferenceBetweenDates(lastEntriesDate, todaysDate)
-                Log.i(
-                    TAG,
-                    "The time difference is $timeDifference days."
-                )
+                val timeDifference = getTimeDifferenceBetweenDates(latestEntry.dateTime, LocalDateTime.now())
                 if (timeDifference > 0) {
-                    while (timeDifference > 0) {
-                        val dateForNewEntry = todaysDate.minusDays(timeDifference - 1)
-                        val newEntry = DayEntry(dateForNewEntry, 0)
-                        dbHelper.addNewEntryToDb(newEntry)
-//                        Log.i(
-//                            TAG,
-//                            "DB was not up to date. The time difference was $timeDifference days."
-//                        )
-                        timeDifference--
-                    }
+                    createPastEmptyEntries(timeDifference)
                 } else {
-                    while (timeDifference <= 0) {
-//                        Log.i(
-//                            TAG,
-//                            "DB was not up to date. The time difference was $timeDifference days."
-//                        )
-                        try {
-                            dbHelper.deleteLatestEntry()
-                        } catch (e: Exception) {
-                            Log.e(TAG, e.toString())
-                        }
-                        timeDifference++
-                    }
+                    deleteEntriesInFuture(timeDifference)
                 }
             }
         }
         if (!dbHelper.dbHasValues()) {
-            dbHelper.addNewEntryToDb(DayEntry(LocalDateTime.now(), 0, ))
+            dbHelper.addEntryToDbForDate(LocalDateTime.now())
         }
 
+    }
+
+    private fun createPastEmptyEntries(timeDifference: Long) {
+        var timeDifference1 = timeDifference
+        while (timeDifference1 > 0) {
+            val dateForNewEntry = LocalDateTime.now().minusDays(timeDifference1 - 1)
+            dbHelper.addEntryToDbForDate(dateForNewEntry)
+            timeDifference1--
+        }
+    }
+
+    private fun deleteEntriesInFuture(timeDifference: Long) {
+        var timeDifference1 = timeDifference
+        while (timeDifference1 <= 0) {
+            try {
+                dbHelper.deleteLatestEntry()
+            } catch (e: Exception) {
+                Log.e(TAG, e.toString())
+            }
+            timeDifference1++
+        }
     }
 
     fun getTotalJCount(): Int {
@@ -109,6 +103,11 @@ class CounterViewModel(
     ): Long {
         //        Log.i(TAG, "TimeDifference is $timeDifferenceBetweenDates")
         return Duration.between(lastEntriesDate, todaysDate).toDays()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        dbHelper.closeDb()
     }
 
     companion object {
