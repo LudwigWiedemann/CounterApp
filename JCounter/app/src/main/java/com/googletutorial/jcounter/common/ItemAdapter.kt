@@ -6,11 +6,11 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
 import android.widget.TextView
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
 import com.googletutorial.jcounter.R
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 class ItemAdapter(
@@ -35,12 +35,12 @@ class ItemAdapter(
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
         with(dataset[position]) {
             holder.tvCounter.text = count.toString()
-            holder.tvDayOfWeek.text = dateTime.dayOfWeek.toString()
+            holder.tvDayOfWeek.text = date.dayOfWeek.toString()
             val tvEntryDateText = String.format(
                 context.getString(R.string.date_format),
-                addLeadingZero(dateTime.dayOfMonth.toString()),
-                addLeadingZero(dateTime.month.value.toString()),
-                dateTime.year
+                addLeadingZero(date.dayOfMonth.toString()),
+                addLeadingZero(date.month.value.toString()),
+                date.year
             )
             holder.tvEntryDate.text = tvEntryDateText
         }
@@ -61,14 +61,15 @@ class ItemAdapter(
             val entry: DayEntry = dataset[itemPosition]
             val bundle = Bundle()
             bundle.putInt("id", entry.id!!)
-            bundle.putString("dateString", getDateStringFromDate(entry.dateTime))
+            bundle.putString("dateString", getDateStringFromDate(entry.date))
             bundle.putInt("count", entry.count)
-            Log.i("OnItemClickListener", "id: ${entry.id}, dateString: ${getDateStringFromDate(entry.dateTime)}, count: ${entry.count}" )
+            bundle.putSerializable("timeList", entry.timeList)
+            Log.i("OnItemClickListener", "id: ${entry.id}, dateString: ${getDateStringFromDate(entry.date)}, count: ${entry.count},  timeList: ${entry.timeList}" )
             navController.navigate(R.id.action_overviewFragment_to_counterFragment, bundle)
         }
     }
 
-    private fun getDateStringFromDate(d: LocalDateTime) =
+    private fun getDateStringFromDate(d: LocalDate) =
         "${d.dayOfWeek}, ${d.dayOfMonth}. ${d.month} ${d.year}"
 
     private fun addLeadingZero(text: String): String {

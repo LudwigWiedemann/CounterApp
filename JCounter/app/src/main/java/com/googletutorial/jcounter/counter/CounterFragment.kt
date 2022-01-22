@@ -12,6 +12,7 @@ import androidx.navigation.fragment.NavHostFragment
 import com.googletutorial.jcounter.R
 import com.googletutorial.jcounter.common.DatabaseHelper
 import com.googletutorial.jcounter.databinding.CounterFragmentBinding
+import java.time.LocalTime
 
 class CounterFragment : Fragment() {
     private lateinit var binding: CounterFragmentBinding
@@ -31,12 +32,14 @@ class CounterFragment : Fragment() {
         var iDateString = ""
         var iDayEntryId = -1
         var iCount = -1
+        var timeList = arrayListOf<LocalTime>()
         try {
             with(requireArguments()) {
                 iDayEntryId = getInt("id")
                 iDateString = getString("dateString")!!
                 iCount = getInt("count")
-                Log.i(TAG, "id: $iDayEntryId, dateString: $iDateString, count: $iCount" )
+                timeList = getSerializable("timeList") as ArrayList<LocalTime>
+                Log.i(TAG, "id: $iDayEntryId, dateString: $iDateString, count: $iCount, timeList: $timeList" )
 
             }
         }catch (e:IllegalStateException) {
@@ -45,7 +48,7 @@ class CounterFragment : Fragment() {
             Log.d(TAG, "in CounterFragment.onCreate: $e")
         }
         val dbHelper = DatabaseHelper(requireContext())
-        val viewModelFactory = CounterViewModelFactory(dbHelper, iDayEntryId, iDateString, iCount)
+        val viewModelFactory = CounterViewModelFactory(dbHelper, iDayEntryId, iDateString, iCount, timeList)
 
         viewModel = ViewModelProvider(this, viewModelFactory)[CounterViewModel::class.java]
 

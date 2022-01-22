@@ -5,16 +5,18 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.googletutorial.jcounter.common.DatabaseHelper
-import com.googletutorial.jcounter.common.DayEntry
 import java.lang.Exception
 import java.time.Duration
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 
 class CounterViewModel(
     private val dbHelper: DatabaseHelper,
     private var dayEntryId: Int,
     var dateString: String,
-    iCount: Int
+    iCount: Int,
+    var timeList: ArrayList<LocalTime>
 ) : ViewModel() {
 
     private val _count = MutableLiveData<Int>()
@@ -26,7 +28,7 @@ class CounterViewModel(
         if (dayEntryId == -1) {
             with(getLatestEntry()) {
                 dayEntryId = id!!
-                dateString = getDateStringFromDate(dateTime)
+                dateString = getDateStringFromDate(date)
                 _count.value = count
             }
         } else {
@@ -36,20 +38,23 @@ class CounterViewModel(
 
     fun increaseCount() {
         _count.value = _count.value!! + 1
+        timeList.add(LocalTime.now())
     }
 
     fun decreaseCount() {
         _count.value = _count.value!! - 1
+        timeList.removeAt(timeList.lastIndex)
     }
 
     fun fillDbUntilNow() {
         if (dbHelper.dbHasValues()) {
             val latestEntry = getLatestEntry()
             if (latestEntry.isFromToday()) {
-                Log.i(TAG, "On init the latest Entry is from today: ${latestEntry.dateTime}. No entries created")
+                Log.i(TAG, "On init the latest Entry is from today: ${latestEntry.date}. No entries created")
                 return
             } else {
-                val timeDifference = getTimeDifferenceBetweenDates(latestEntry.dateTime, LocalDateTime.now())
+                val lastDateTime = LocalDateTime.of(latestEntry.date.year, latestEntry.date.month, latestEntry.date.dayOfMonth, LocalTime.now().hour, LocalTime.now().minute, LocalTime.now().second)
+                val timeDifference = getDayDifferenceToToday(lastDateTime)
                 if (timeDifference > 0) {
                     createPastEmptyEntries(timeDifference)
                 } else {
@@ -89,20 +94,19 @@ class CounterViewModel(
     }
 
     fun updateDatabase() {
-        dbHelper.updateCountForEntryWithId(count.value!!, dayEntryId)
+        dbHelper.updateCountForEntryWithId(count.value!!, dayEntryId, timeList)
     }
 
-    private fun getDateStringFromDate(d: LocalDateTime) =
+    private fun getDateStringFromDate(d: LocalDate) =
         "${d.dayOfWeek}, ${d.dayOfMonth}. ${d.month} ${d.year}"
 
     private fun getLatestEntry() = dbHelper.getLatestEntry()
 
-    private fun getTimeDifferenceBetweenDates(
+    private fun getDayDifferenceToToday(
         lastEntriesDate: LocalDateTime,
-        todaysDate: LocalDateTime?
     ): Long {
         //        Log.i(TAG, "TimeDifference is $timeDifferenceBetweenDates")
-        return Duration.between(lastEntriesDate, todaysDate).toDays()
+        return Duration.between(lastEntriesDate, LocalDateTime.now()).toDays()
     }
 
     override fun onCleared() {

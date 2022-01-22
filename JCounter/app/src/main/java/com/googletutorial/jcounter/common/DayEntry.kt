@@ -2,27 +2,22 @@ package com.googletutorial.jcounter.common
 
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 
 data class DayEntry(
     val id: Int?,
-    val dateTime: LocalDateTime,
+    val date: LocalDate,
     var count: Int,
+    var timeList: ArrayList<LocalTime>
 ){
     constructor(
-        date: LocalDateTime,
-        count: Int) : this(null, date, count)
+        date: LocalDate,
+        count: Int,
+        timeList: ArrayList<LocalTime>) : this(null, date, count, timeList)
 
     fun isFromToday(): Boolean {
-        return getDateFromLocalDateTime(dateTime) == LocalDate.now()
+        return date == LocalDate.now()
     }
 
-    private fun getDateFromLocalDateTime(dateTime: LocalDateTime): LocalDate {
-        return with(dateTime) {
-            LocalDate.of(
-                year,
-                month,
-                dayOfMonth
-            )
-        }
-    }
+
 }
