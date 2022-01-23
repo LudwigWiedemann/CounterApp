@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.googletutorial.jcounter.common.DatabaseHelper
+import com.googletutorial.jcounter.common.DayEntry
 import java.lang.Exception
 import java.time.Duration
 import java.time.LocalDate
@@ -13,37 +14,37 @@ import java.time.LocalTime
 
 class CounterViewModel(
     private val dbHelper: DatabaseHelper,
-    private var dayEntryId: Int,
-    var dateString: String,
-    iCount: Int,
-    var timeList: ArrayList<LocalTime>
+    private var _dayEntry: DayEntry?
+//    private var dayEntryId: Int,
+//    var dateString: String,
+//    iCount: Int,
+//    var timeList: ArrayList<LocalTime>
 ) : ViewModel() {
 
     private val _count = MutableLiveData<Int>()
     val count: LiveData<Int>
     get() = _count
-
+    private var dayEntry: DayEntry
     init {
         fillDbUntilNow()
-        if (dayEntryId == -1) {
-            with(getLatestEntry()) {
-                dayEntryId = id!!
-                dateString = getDateStringFromDate(date)
-                _count.value = count
-            }
-        } else {
-            _count.value = iCount
+        if (_dayEntry == null) {
+            _dayEntry = getLatestEntry()
         }
+        dayEntry = _dayEntry!!
+        _count.value = dayEntry.getCount()
     }
 
+    fun getDayEntry(): DayEntry = dayEntry
+
     fun increaseCount() {
-        _count.value = _count.value!! + 1
-        timeList.add(LocalTime.now())
+//        _count.value = _count.value!! + 1
+        dayEntry.timeList.add(LocalTime.now())
+        _count.value = dayEntry.getCount()
     }
 
     fun decreaseCount() {
         _count.value = _count.value!! - 1
-        timeList.removeAt(timeList.lastIndex)
+        dayEntry.timeList.removeAt(dayEntry.timeList.lastIndex)
     }
 
     fun fillDbUntilNow() {
@@ -94,10 +95,10 @@ class CounterViewModel(
     }
 
     fun updateDatabase() {
-        dbHelper.updateCountForEntryWithId(count.value!!, dayEntryId, timeList)
+        dbHelper.updateTimeListForDayEntryId(dayEntry.id!!, dayEntry.timeList)
     }
 
-    private fun getDateStringFromDate(d: LocalDate) =
+    fun getDateStringFromDate(d: LocalDate) =
         "${d.dayOfWeek}, ${d.dayOfMonth}. ${d.month} ${d.year}"
 
     private fun getLatestEntry() = dbHelper.getLatestEntry()

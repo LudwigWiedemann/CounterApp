@@ -8,13 +8,10 @@ import java.lang.IllegalArgumentException
 import java.time.LocalTime
 
 class CounterViewModelFactory(private val dbHelper: DatabaseHelper,
-                              private val dayEntryId: Int,
-                              private val dateString: String,
-                              private val count: Int,
-                              private val timeList: ArrayList<LocalTime>) : ViewModelProvider.Factory {
+                              private val dayEntry: DayEntry?) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(CounterViewModel::class.java)) {
-            return CounterViewModel(dbHelper, dayEntryId, dateString, count, timeList) as T
+            return CounterViewModel(dbHelper, dayEntry) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

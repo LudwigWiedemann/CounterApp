@@ -11,8 +11,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.NavHostFragment
 import com.googletutorial.jcounter.R
 import com.googletutorial.jcounter.common.DatabaseHelper
+import com.googletutorial.jcounter.common.DayEntry
 import com.googletutorial.jcounter.databinding.CounterFragmentBinding
-import java.time.LocalTime
 
 class CounterFragment : Fragment() {
     private lateinit var binding: CounterFragmentBinding
@@ -29,18 +29,11 @@ class CounterFragment : Fragment() {
             container,
             false
         )
-        var iDateString = ""
-        var iDayEntryId = -1
-        var iCount = -1
-        var timeList = arrayListOf<LocalTime>()
+        var tempDayEntry: DayEntry? = null
         try {
             with(requireArguments()) {
-                iDayEntryId = getInt("id")
-                iDateString = getString("dateString")!!
-                iCount = getInt("count")
-                timeList = getSerializable("timeList") as ArrayList<LocalTime>
-                Log.i(TAG, "id: $iDayEntryId, dateString: $iDateString, count: $iCount, timeList: $timeList" )
-
+                val entryInList = getSerializable("entryInList") as ArrayList<DayEntry>
+                tempDayEntry = entryInList[0]
             }
         }catch (e:IllegalStateException) {
             Log.i(TAG, "The Fragment has been started without a bundle $e")
@@ -48,13 +41,11 @@ class CounterFragment : Fragment() {
             Log.d(TAG, "in CounterFragment.onCreate: $e")
         }
         val dbHelper = DatabaseHelper(requireContext())
-        val viewModelFactory = CounterViewModelFactory(dbHelper, iDayEntryId, iDateString, iCount, timeList)
+        val viewModelFactory = CounterViewModelFactory(dbHelper, tempDayEntry)
 
         viewModel = ViewModelProvider(this, viewModelFactory)[CounterViewModel::class.java]
 
-        totalCount = viewModel.getTotalJCount()
-        binding.tvTotalCount.text = totalCount.toString()
-        binding.tvDate.text = viewModel.dateString
+        updateUi()
 
 
         binding.btnPlus.setOnClickListener {
@@ -80,6 +71,14 @@ class CounterFragment : Fragment() {
         return binding.root
     }
 
+    private fun updateUi() {
+        with(viewModel.getDayEntry()) {
+            totalCount = viewModel.getTotalJCount()
+            binding.tvTotalCount.text = totalCount.toString()
+            binding.tvDate.text = viewModel.getDateStringFromDate(date)
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         refresh()
@@ -89,11 +88,6 @@ class CounterFragment : Fragment() {
         with(viewModel) {
             fillDbUntilNow()
         }
-    }
-
-    override fun onStop() {
-        super.onStop()
-        viewModel.updateDatabase()
     }
 
     companion object {

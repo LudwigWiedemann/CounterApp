@@ -7,17 +7,15 @@ import java.time.LocalTime
 data class DayEntry(
     val id: Int?,
     val date: LocalDate,
-    var count: Int,
     var timeList: ArrayList<LocalTime>
 ){
     constructor(
         date: LocalDate,
-        count: Int,
-        timeList: ArrayList<LocalTime>) : this(null, date, count, timeList)
+        timeList: ArrayList<LocalTime>) : this(null, date, timeList)
 
-    fun isFromToday(): Boolean {
-        return date == LocalDate.now()
-    }
+    fun isFromToday(): Boolean = date == LocalDate.now()
+
+    fun getCount(): Int = timeList.size
 
 
 }

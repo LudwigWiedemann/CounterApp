@@ -20,22 +20,9 @@ class DatabaseHelper(context: Context) :
                 put(COLUMN_DAYOFMONTH, dayOfMonth)
                 put(COLUMN_MONTH, month.value)
                 put(COLUMN_YEAR, year)
-                put(COLUMN_COUNTER, 0)
             }
         }
         writableDatabase.insert(TABLE_NAME_DAY_ENTRY, null, values)
-    }
-
-    fun updateCountForEntryWithId(count: Int, id: Int, timeList: ArrayList<LocalTime>) {
-        val values = ContentValues()
-        values.put(COLUMN_COUNTER, count)
-        writableDatabase.update(
-            TABLE_NAME_DAY_ENTRY,
-            values,
-            "$COLUMN_ID_DAY_ENTRY = ?",
-            arrayOf(id.toString())
-        )
-        updateTimeListForDayEntryId(id, timeList)
     }
 
     private fun getTimeListForDayEntryID(id: Int): ArrayList<LocalTime> {
@@ -60,7 +47,7 @@ class DatabaseHelper(context: Context) :
         }
     }
 
-    private fun updateTimeListForDayEntryId(id: Int, timeList: ArrayList<LocalTime>) {
+    fun updateTimeListForDayEntryId(id: Int, timeList: ArrayList<LocalTime>) {
         writableDatabase.execSQL("DELETE FROM $TABLE_NAME_TIME WHERE $COLUMN_ID_DAY_ENTRY = $id")
         for (time in timeList) {
             val values = ContentValues().apply {
@@ -92,7 +79,6 @@ class DatabaseHelper(context: Context) :
             Log.e(TAG, "could not execute query in DB: $e")
             DayEntry(
                 LocalDate.of(0, Month.AUGUST, 1),
-                0,
                 arrayListOf<LocalTime>()
             )
         }
@@ -137,8 +123,8 @@ class DatabaseHelper(context: Context) :
     fun getTotalJCountFromDB(): Int {
         try {
             val cursor = readableDatabase.query(
-                TABLE_NAME_DAY_ENTRY,
-                arrayOf("SUM($COLUMN_COUNTER) AS $COLUMN_TOTALCOUNT"),
+                TABLE_NAME_TIME,
+                arrayOf("SUM($COLUMN_ID_TIME) AS $COLUMN_TOTALCOUNT"),
                 null,
                 null,
                 null,
@@ -165,11 +151,10 @@ class DatabaseHelper(context: Context) :
                 val dayOfMonth: Int = getInt(getColumnIndexOrThrow(COLUMN_DAYOFMONTH))
                 val monthInt: Int = getInt(getColumnIndexOrThrow(COLUMN_MONTH))
                 val year: Int = getInt(getColumnIndexOrThrow(COLUMN_YEAR))
-                val counter: Int = getInt(getColumnIndexOrThrow(COLUMN_COUNTER))
 
                 val month = Month.of(monthInt)
                 val date = LocalDate.of(year, month, dayOfMonth)
-                list.add(DayEntry(id, date, counter, arrayListOf<LocalTime>()))
+                list.add(DayEntry(id, date, arrayListOf<LocalTime>()))
             }
         }
         return list
@@ -184,16 +169,15 @@ class DatabaseHelper(context: Context) :
                 val dayOfMonth: Int = getInt(getColumnIndexOrThrow(COLUMN_DAYOFMONTH))
                 val monthInt: Int = getInt(getColumnIndexOrThrow(COLUMN_MONTH))
                 val year: Int = getInt(getColumnIndexOrThrow(COLUMN_YEAR))
-                val counter: Int = getInt(getColumnIndexOrThrow(COLUMN_COUNTER))
 
                 val month = Month.of(monthInt)
                 val date = LocalDate.of(year, month, dayOfMonth)
-                entry = DayEntry(id, date, counter, arrayListOf<LocalTime>())
+                entry = DayEntry(id, date, arrayListOf<LocalTime>())
             }
             return entry
         } else {
             Log.i(TAG, "Could not find entries in the database")
-            return DayEntry(LocalDate.now(), 0, arrayListOf<LocalTime>())
+            return DayEntry(LocalDate.now(), arrayListOf<LocalTime>())
         }
     }
 
@@ -234,7 +218,6 @@ class DatabaseHelper(context: Context) :
         const val COLUMN_HOUR = "hour"
         const val COLUMN_MINUTE = "minute"
         const val COLUMN_SECOND = "second"
-        const val COLUMN_COUNTER = "counter"
         const val COLUMN_TOTALCOUNT = "totalCount"
         const val SQL_DELETE_TABLE_DAY_ENTRY = "DROP TABLE IF EXISTS $TABLE_NAME_DAY_ENTRY"
         const val SQL_DELETE_TABLE_TIME = "DROP TABLE IF EXISTS $TABLE_NAME_TIME"
@@ -243,7 +226,6 @@ class DatabaseHelper(context: Context) :
                 "$COLUMN_DAYOFMONTH INTEGER," +
                 "$COLUMN_MONTH INTEGER," +
                 "$COLUMN_YEAR INTEGER," +
-                "$COLUMN_COUNTER INTEGER" +
                 ")"
         const val SQL_CREATE_TABLE_TIME = "CREATE TABLE $TABLE_NAME_TIME (" +
                 "$COLUMN_ID_TIME INTEGER PRIMARY KEY AUTOINCREMENT," +

@@ -34,7 +34,7 @@ class ItemAdapter(
 
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
         with(dataset[position]) {
-            holder.tvCounter.text = count.toString()
+            holder.tvCounter.text = getCount().toString()
             holder.tvDayOfWeek.text = date.dayOfWeek.toString()
             val tvEntryDateText = String.format(
                 context.getString(R.string.date_format),
@@ -60,17 +60,10 @@ class ItemAdapter(
             val itemPosition: Int = recyclerView.getChildLayoutPosition(p0!!)
             val entry: DayEntry = dataset[itemPosition]
             val bundle = Bundle()
-            bundle.putInt("id", entry.id!!)
-            bundle.putString("dateString", getDateStringFromDate(entry.date))
-            bundle.putInt("count", entry.count)
-            bundle.putSerializable("timeList", entry.timeList)
-            Log.i("OnItemClickListener", "id: ${entry.id}, dateString: ${getDateStringFromDate(entry.date)}, count: ${entry.count},  timeList: ${entry.timeList}" )
+            bundle.putSerializable("entryInList", arrayListOf(entry))
             navController.navigate(R.id.action_overviewFragment_to_counterFragment, bundle)
         }
     }
-
-    private fun getDateStringFromDate(d: LocalDate) =
-        "${d.dayOfWeek}, ${d.dayOfMonth}. ${d.month} ${d.year}"
 
     private fun addLeadingZero(text: String): String {
         return if (text.length <= 1) {
