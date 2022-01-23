@@ -5,19 +5,22 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.NavHostFragment
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.googletutorial.jcounter.R
 import com.googletutorial.jcounter.common.DatabaseHelper
 import com.googletutorial.jcounter.common.DayEntry
+import com.googletutorial.jcounter.common.DayEntryItemAdapter
+import com.googletutorial.jcounter.common.TimeItemAdapter
 import com.googletutorial.jcounter.databinding.CounterFragmentBinding
 
 class CounterFragment : Fragment() {
     private lateinit var binding: CounterFragmentBinding
     private lateinit var viewModel: CounterViewModel
-    private var totalCount = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -34,6 +37,8 @@ class CounterFragment : Fragment() {
             with(requireArguments()) {
                 val entryInList = getSerializable("entryInList") as ArrayList<DayEntry>
                 tempDayEntry = entryInList[0]
+//                Log.i(TAG, entryInList[0].toString())
+
             }
         }catch (e:IllegalStateException) {
             Log.i(TAG, "The Fragment has been started without a bundle $e")
@@ -45,18 +50,11 @@ class CounterFragment : Fragment() {
 
         viewModel = ViewModelProvider(this, viewModelFactory)[CounterViewModel::class.java]
 
-        updateUi()
-
-
         binding.btnPlus.setOnClickListener {
             viewModel.increaseCount()
-            totalCount ++
-            binding.tvTotalCount.text = totalCount.toString()
         }
         binding.btnMinus.setOnClickListener {
             viewModel.decreaseCount()
-            totalCount --
-            binding.tvTotalCount.text = totalCount.toString()
         }
 
         binding.btnOverview.setOnClickListener {
@@ -65,16 +63,31 @@ class CounterFragment : Fragment() {
         }
 
         viewModel.count.observe(viewLifecycleOwner, { count ->
-            binding.tvCount.text = count.toString()
-            viewModel.updateDatabase()
+            if (count >= 0) {
+                viewModel.updateDatabase()
+                val recyclerView = binding.recyclerView
+                val dataset = viewModel.getDatasetForAdapter()
+                recyclerView.adapter = TimeItemAdapter(dataset)
+                recyclerView.layoutManager = LinearLayoutManager(activity)
+                Log.i(TAG, "adapter created")
+                recyclerView.setHasFixedSize(true)
+                updateUi(count)
+            } else {
+                showStupidMessage()
+            }
         })
+
         return binding.root
     }
 
-    private fun updateUi() {
+    private fun showStupidMessage() {
+        Toast.makeText(requireContext(), "Bist du eigentlich komplett behindert?", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun updateUi(count: Int) {
         with(viewModel.getDayEntry()) {
-            totalCount = viewModel.getTotalJCount()
-            binding.tvTotalCount.text = totalCount.toString()
+            binding.tvTotalCount.text =  viewModel.getTotalJCount().toString()
+            binding.tvCount.text = count.toString()
             binding.tvDate.text = viewModel.getDateStringFromDate(date)
         }
     }

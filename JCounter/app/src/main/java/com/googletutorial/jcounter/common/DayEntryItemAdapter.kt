@@ -10,29 +10,28 @@ import android.widget.TextView
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
 import com.googletutorial.jcounter.R
-import java.time.LocalDate
-import java.time.LocalDateTime
 
-class ItemAdapter(
+class DayEntryItemAdapter(
     private val dataset: ArrayList<DayEntry>,
     private val context: Context,
     private val recyclerView: RecyclerView,
     private val navController: NavController
-) : RecyclerView.Adapter<ItemAdapter.ItemViewHolder>() {
+) : RecyclerView.Adapter<DayEntryItemAdapter.DayEntryItemViewHolder>() {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DayEntryItemViewHolder {
         // create a new view
         val listItemLayout = LayoutInflater.from(parent.context)
             .inflate(R.layout.list_item_day_entry, parent, false)
         listItemLayout.setOnClickListener(ItemOnClickListener())
+        Log.i("dayEntryItemAdapter", "somethiiiiiing pls")
 
-        return ItemViewHolder(listItemLayout)
+        return DayEntryItemViewHolder(listItemLayout)
     }
 
     override fun getItemCount() = dataset.size
 
 
-    override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: DayEntryItemViewHolder, position: Int) {
         with(dataset[position]) {
             holder.tvCounter.text = getCount().toString()
             holder.tvDayOfWeek.text = date.dayOfWeek.toString()
@@ -44,10 +43,12 @@ class ItemAdapter(
             )
             holder.tvEntryDate.text = tvEntryDateText
         }
+        Log.i("DayEntryItemAdapter", dataset[position].toString())
+
     }
 
 
-    inner class ItemViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+    inner class DayEntryItemViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tvCounter: TextView = view.findViewById(R.id.tv_counter)
         val tvEntryDate: TextView = view.findViewById(R.id.tv_entry_date)
         val tvDayOfWeek: TextView = view.findViewById(R.id.tv_day_of_week)

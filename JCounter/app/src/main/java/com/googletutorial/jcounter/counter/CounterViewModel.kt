@@ -15,10 +15,6 @@ import java.time.LocalTime
 class CounterViewModel(
     private val dbHelper: DatabaseHelper,
     private var _dayEntry: DayEntry?
-//    private var dayEntryId: Int,
-//    var dateString: String,
-//    iCount: Int,
-//    var timeList: ArrayList<LocalTime>
 ) : ViewModel() {
 
     private val _count = MutableLiveData<Int>()
@@ -32,19 +28,25 @@ class CounterViewModel(
         }
         dayEntry = _dayEntry!!
         _count.value = dayEntry.getCount()
+        Log.i(TAG, "hh" + dayEntry.toString())
+
     }
 
     fun getDayEntry(): DayEntry = dayEntry
 
     fun increaseCount() {
-//        _count.value = _count.value!! + 1
         dayEntry.timeList.add(LocalTime.now())
         _count.value = dayEntry.getCount()
     }
 
     fun decreaseCount() {
-        _count.value = _count.value!! - 1
-        dayEntry.timeList.removeAt(dayEntry.timeList.lastIndex)
+        if (_count.value != 0) {
+            dayEntry.timeList.removeAt(dayEntry.timeList.lastIndex)
+            _count.value = dayEntry.getCount()
+        } else {
+            _count.value = -1
+            _count.value = 0
+        }
     }
 
     fun fillDbUntilNow() {
@@ -114,6 +116,8 @@ class CounterViewModel(
         super.onCleared()
         dbHelper.closeDb()
     }
+
+    fun getDatasetForAdapter() = dayEntry.timeList
 
     companion object {
         const val TAG = "CounterViewModel"

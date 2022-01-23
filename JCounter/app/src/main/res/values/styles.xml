@@ -3,6 +3,7 @@
 
     <style name="style_tv_date" parent="Widget.AppCompat.TextView">
         <item name="android:textSize">15sp</item>
+        <item name="android:gravity">center</item>
     </style>
 
     <style name="style_tv_description_big" parent="Widget.AppCompat.TextView">
@@ -19,12 +20,13 @@
     <style name="style_tv_counter_small" parent="Widget.AppCompat.TextView">
         <item name="android:textSize">50sp</item>
         <item name="android:textStyle">bold</item>
-
+        <item name="android:gravity">center</item>
     </style>
 
     <style name="style_tv_counter_big" parent="Widget.AppCompat.TextView">
         <item name="android:textSize">200sp</item>
         <item name="android:textStyle">bold</item>
+        <item name="android:gravity">center</item>
     </style>
 
 </resources>

@@ -124,7 +124,7 @@ class DatabaseHelper(context: Context) :
         try {
             val cursor = readableDatabase.query(
                 TABLE_NAME_TIME,
-                arrayOf("SUM($COLUMN_ID_TIME) AS $COLUMN_TOTALCOUNT"),
+                arrayOf("COUNT($COLUMN_ID_TIME) AS $COLUMN_TOTALCOUNT"),
                 null,
                 null,
                 null,
@@ -225,7 +225,7 @@ class DatabaseHelper(context: Context) :
                 "$COLUMN_ID_DAY_ENTRY INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "$COLUMN_DAYOFMONTH INTEGER," +
                 "$COLUMN_MONTH INTEGER," +
-                "$COLUMN_YEAR INTEGER," +
+                "$COLUMN_YEAR INTEGER" +
                 ")"
         const val SQL_CREATE_TABLE_TIME = "CREATE TABLE $TABLE_NAME_TIME (" +
                 "$COLUMN_ID_TIME INTEGER PRIMARY KEY AUTOINCREMENT," +
