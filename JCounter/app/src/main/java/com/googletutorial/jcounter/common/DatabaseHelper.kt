@@ -25,38 +25,41 @@ class DatabaseHelper(context: Context) :
         writableDatabase.insert(TABLE_NAME_DAY_ENTRY, null, values)
     }
 
-    private fun getTimeListForDayEntryID(id: Int): ArrayList<LocalTime> {
+    fun getTimeListForDayEntryID(id: Int): ArrayList<TimeEntry> {
         val cursor = readableDatabase.query(
             TABLE_NAME_TIME,
-            arrayOf(COLUMN_HOUR, COLUMN_MINUTE, COLUMN_SECOND),
+            arrayOf(COLUMN_ID_TIME, COLUMN_HOUR, COLUMN_MINUTE, COLUMN_SECOND),
             "$COLUMN_ID_DAY_ENTRY = ?",
             arrayOf(id.toString()),
             null,
             null,
-            "$COLUMN_ID_TIME DESC"
+            "$COLUMN_HOUR DESC, $COLUMN_MINUTE DESC, $COLUMN_SECOND DESC"
         )
-        return arrayListOf<LocalTime>().apply {
+        return arrayListOf<TimeEntry>().apply {
             with(cursor) {
                 while (moveToNext()) {
+                    val timeId: Int = getInt(getColumnIndexOrThrow(COLUMN_ID_TIME))
                     val hour: Int = getInt(getColumnIndexOrThrow(COLUMN_HOUR))
                     val minute: Int = getInt(getColumnIndexOrThrow(COLUMN_MINUTE))
                     val second: Int = getInt(getColumnIndexOrThrow(COLUMN_SECOND))
-                    add(LocalTime.of(hour, minute, second))
+                    add(TimeEntry(timeId, LocalTime.of(hour, minute, second)))
                 }
             }
         }
     }
 
-    fun updateTimeListForDayEntryId(id: Int, timeList: ArrayList<LocalTime>) {
-        writableDatabase.execSQL("DELETE FROM $TABLE_NAME_TIME WHERE $COLUMN_ID_DAY_ENTRY = $id")
-        for (time in timeList) {
-            val values = ContentValues().apply {
-                put(COLUMN_ID_DAY_ENTRY, id)
-                put(COLUMN_HOUR, time.hour)
-                put(COLUMN_MINUTE, time.minute)
-                put(COLUMN_SECOND, time.second)
+    fun updateTimeListForDayEntryId(dayEntryId: Int, timeList: ArrayList<TimeEntry>) {
+        writableDatabase.execSQL("DELETE FROM $TABLE_NAME_TIME WHERE $COLUMN_ID_DAY_ENTRY = $dayEntryId")
+        for (entry in timeList) {
+            with(entry.time) {
+                val values = ContentValues().apply {
+                    put(COLUMN_ID_DAY_ENTRY, dayEntryId)
+                    put(COLUMN_HOUR, hour)
+                    put(COLUMN_MINUTE, minute)
+                    put(COLUMN_SECOND, second)
+                }
+                writableDatabase.insert(TABLE_NAME_TIME, null, values)
             }
-            writableDatabase.insert(TABLE_NAME_TIME, null, values)
         }
     }
 
@@ -79,7 +82,7 @@ class DatabaseHelper(context: Context) :
             Log.e(TAG, "could not execute query in DB: $e")
             DayEntry(
                 LocalDate.of(0, Month.AUGUST, 1),
-                arrayListOf<LocalTime>()
+                arrayListOf<TimeEntry>()
             )
         }
     }
@@ -102,8 +105,13 @@ class DatabaseHelper(context: Context) :
         return entryList
     }
 
-    fun deleteLatestEntry() {
-        writableDatabase.execSQL("DELETE FROM $TABLE_NAME_DAY_ENTRY WHERE $COLUMN_ID_DAY_ENTRY = (SELECT MAX($COLUMN_ID_DAY_ENTRY) FROM $TABLE_NAME_DAY_ENTRY)")
+    fun deleteEntryWithId(dayEntryId: Int) {
+        writableDatabase.execSQL("DELETE FROM $TABLE_NAME_DAY_ENTRY WHERE $COLUMN_ID_DAY_ENTRY = $dayEntryId")
+        Log.i(TAG, "Latest entry deleted ")
+    }
+
+    fun deleteTimeListForEntryId(dayEntryId: Int) {
+        writableDatabase.execSQL("DELETE FROM $TABLE_NAME_TIME WHERE $COLUMN_ID_DAY_ENTRY = $dayEntryId")
         Log.i(TAG, "Latest entry deleted ")
     }
 
@@ -154,7 +162,7 @@ class DatabaseHelper(context: Context) :
 
                 val month = Month.of(monthInt)
                 val date = LocalDate.of(year, month, dayOfMonth)
-                list.add(DayEntry(id, date, arrayListOf<LocalTime>()))
+                list.add(DayEntry(id, date, arrayListOf<TimeEntry>()))
             }
         }
         return list
@@ -172,12 +180,12 @@ class DatabaseHelper(context: Context) :
 
                 val month = Month.of(monthInt)
                 val date = LocalDate.of(year, month, dayOfMonth)
-                entry = DayEntry(id, date, arrayListOf<LocalTime>())
+                entry = DayEntry(id, date, arrayListOf<TimeEntry>())
             }
             return entry
         } else {
             Log.i(TAG, "Could not find entries in the database")
-            return DayEntry(LocalDate.now(), arrayListOf<LocalTime>())
+            return DayEntry(LocalDate.now(), arrayListOf<TimeEntry>())
         }
     }
 

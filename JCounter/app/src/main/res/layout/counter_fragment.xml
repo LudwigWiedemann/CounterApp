@@ -14,8 +14,8 @@
         android:id="@+id/main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="20dp"
-        android:padding="0dp"
+        android:layout_margin="0dp"
+        android:padding="20dp"
         tools:context=".counter.CounterFragment">
 
         <TextView
@@ -33,10 +33,11 @@
             android:id="@+id/btn_plus"
             android:layout_width="178dp"
             android:layout_height="129dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="40dp"
             android:src="@drawable/img_1"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.497"
             app:layout_constraintStart_toStartOf="parent" />
 
         <ImageButton
@@ -141,8 +142,10 @@
             app:layout_constraintTop_toBottomOf="@+id/divider" />
 
         <LinearLayout
+            android:id="@+id/linearLayout"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:layout_marginBottom="8dp"
             app:layout_constraintBottom_toTopOf="@+id/btn_plus"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -151,8 +154,7 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_view"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="#E91E63" />
+                android:layout_height="match_parent" />
         </LinearLayout>
 
 

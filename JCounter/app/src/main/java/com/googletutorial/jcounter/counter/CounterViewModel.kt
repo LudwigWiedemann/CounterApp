@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.googletutorial.jcounter.common.DatabaseHelper
 import com.googletutorial.jcounter.common.DayEntry
+import com.googletutorial.jcounter.common.TimeEntry
 import java.lang.Exception
 import java.time.Duration
 import java.time.LocalDate
@@ -35,7 +36,12 @@ class CounterViewModel(
     fun getDayEntry(): DayEntry = dayEntry
 
     fun increaseCount() {
-        dayEntry.timeList.add(LocalTime.now())
+        dayEntry.timeList.add(TimeEntry(-3, LocalTime.now()))
+        _count.value = dayEntry.getCount()
+    }
+
+    fun removeTimeEntry(entry: TimeEntry) {
+        dayEntry.timeList.remove(entry)
         _count.value = dayEntry.getCount()
     }
 
@@ -68,7 +74,10 @@ class CounterViewModel(
         if (!dbHelper.dbHasValues()) {
             dbHelper.addEntryToDbForDate(LocalDateTime.now())
         }
+    }
 
+    fun reloadTimeList() {
+        dayEntry.timeList = dbHelper.getTimeListForDayEntryID(dayEntry.id!!)
     }
 
     private fun createPastEmptyEntries(timeDifference: Long) {
@@ -84,7 +93,9 @@ class CounterViewModel(
         var timeDifference1 = timeDifference
         while (timeDifference1 <= 0) {
             try {
-                dbHelper.deleteLatestEntry()
+                val latestEntry = dbHelper.getLatestEntry()
+                dbHelper.deleteTimeListForEntryId(latestEntry.id!!)
+                dbHelper.deleteEntryWithId(latestEntry.id)
             } catch (e: Exception) {
                 Log.e(TAG, e.toString())
             }

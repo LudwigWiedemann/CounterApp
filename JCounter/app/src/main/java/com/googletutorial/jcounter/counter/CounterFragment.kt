@@ -11,16 +11,18 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.googletutorial.jcounter.R
-import com.googletutorial.jcounter.common.DatabaseHelper
-import com.googletutorial.jcounter.common.DayEntry
-import com.googletutorial.jcounter.common.DayEntryItemAdapter
-import com.googletutorial.jcounter.common.TimeItemAdapter
+import com.googletutorial.jcounter.common.*
 import com.googletutorial.jcounter.databinding.CounterFragmentBinding
 
-class CounterFragment : Fragment() {
+class CounterFragment : Fragment(), RecyclerViewClickListener {
     private lateinit var binding: CounterFragmentBinding
     private lateinit var viewModel: CounterViewModel
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var dataset: ArrayList<TimeEntry>
+    private lateinit var timeItemAdapter: TimeItemAdapter
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -48,7 +50,15 @@ class CounterFragment : Fragment() {
         val dbHelper = DatabaseHelper(requireContext())
         val viewModelFactory = CounterViewModelFactory(dbHelper, tempDayEntry)
 
+
         viewModel = ViewModelProvider(this, viewModelFactory)[CounterViewModel::class.java]
+
+        recyclerView = binding.recyclerView
+        dataset = viewModel.getDatasetForAdapter()
+        timeItemAdapter = TimeItemAdapter(this, recyclerView, dataset)
+        recyclerView.adapter = timeItemAdapter
+        recyclerView.layoutManager = LinearLayoutManager(activity)
+        recyclerView.setHasFixedSize(true)
 
         binding.btnPlus.setOnClickListener {
             viewModel.increaseCount()
@@ -65,12 +75,7 @@ class CounterFragment : Fragment() {
         viewModel.count.observe(viewLifecycleOwner, { count ->
             if (count >= 0) {
                 viewModel.updateDatabase()
-                val recyclerView = binding.recyclerView
-                val dataset = viewModel.getDatasetForAdapter()
-                recyclerView.adapter = TimeItemAdapter(dataset)
-                recyclerView.layoutManager = LinearLayoutManager(activity)
-                Log.i(TAG, "adapter created")
-                recyclerView.setHasFixedSize(true)
+                viewModel.reloadTimeList()
                 updateUi(count)
             } else {
                 showStupidMessage()
@@ -89,7 +94,11 @@ class CounterFragment : Fragment() {
             binding.tvTotalCount.text =  viewModel.getTotalJCount().toString()
             binding.tvCount.text = count.toString()
             binding.tvDate.text = viewModel.getDateStringFromDate(date)
+            timeItemAdapter.setDataset(viewModel.getDatasetForAdapter())
         }
+        dataset = viewModel.getDatasetForAdapter()
+        timeItemAdapter = TimeItemAdapter(this, recyclerView, dataset)
+        recyclerView.adapter = timeItemAdapter
     }
 
     override fun onResume() {
@@ -105,5 +114,9 @@ class CounterFragment : Fragment() {
 
     companion object {
         const val TAG = "CounterFragment"
+    }
+
+    override fun recyclerViewListClicked(entry: TimeEntry) {
+       viewModel.removeTimeEntry(entry)
     }
 }
