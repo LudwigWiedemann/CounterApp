@@ -55,7 +55,7 @@ class OverviewFragment : Fragment() {
             requireContext().getString(R.string.avg_format),
             dateFrom,
             dateUntil,
-            dbHelper.getAverageBetweenDates(dateFrom, dateUntil).toString()
+            dbHelper.getAverageBetweenDates(dateFrom, dateUntil).toString().substring(0,3)
         )
         binding.tvAverage.setOnClickListener {
             toggleUiVisibility()
@@ -85,8 +85,7 @@ class OverviewFragment : Fragment() {
                 requireContext().getString(R.string.avg_format),
                 dateFrom,
                 dateUntil,
-                dbHelper.getAverageBetweenDates(dateFrom, dateUntil).toString()
-            )
+                dbHelper.getAverageBetweenDates(dateFrom, dateUntil).toString().substring(0,3)            )
             Log.i("bla", "from: $dateFrom" )
 
         }
@@ -100,8 +99,7 @@ class OverviewFragment : Fragment() {
                 requireContext().getString(R.string.avg_format),
                 dateFrom,
                 dateUntil,
-                dbHelper.getAverageBetweenDates(dateFrom, dateUntil).toString()
-            )
+                dbHelper.getAverageBetweenDates(dateFrom, dateUntil).toString().substring(0,3)            )
         }
     }
 

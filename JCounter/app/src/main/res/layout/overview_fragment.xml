@@ -43,8 +43,8 @@
         <CalendarView
             android:id="@+id/calendarViewUntil"
             android:layout_width="348dp"
-            android:layout_height="300dp"
-            android:layout_marginBottom="40dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="30dp"
             app:layout_constraintBottom_toBottomOf="@+id/frameLayout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
@@ -52,8 +52,8 @@
         <CalendarView
             android:id="@+id/calendarViewFrom"
             android:layout_width="wrap_content"
-            android:layout_height="300dp"
-            android:layout_marginBottom="40dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="30dp"
             app:layout_constraintBottom_toTopOf="@+id/calendarViewUntil"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />

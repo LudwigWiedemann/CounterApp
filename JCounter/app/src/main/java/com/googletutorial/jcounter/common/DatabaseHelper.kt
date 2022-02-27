@@ -11,6 +11,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.Month
+import kotlin.math.roundToInt
 
 class DatabaseHelper(context: Context) :
     SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
@@ -112,7 +113,7 @@ class DatabaseHelper(context: Context) :
         }
     }
 
-    fun getAverageBetweenDates(date1: LocalDate, date2: LocalDate): Int {
+    fun getAverageBetweenDates(date1: LocalDate, date2: LocalDate): Float {
         val id1 = getEntryIdForDate(date1)
         val id2 = getEntryIdForDate(date2)
         return getAverageCountBetweenDayEntriesWithId(id1, id2)
@@ -139,10 +140,10 @@ class DatabaseHelper(context: Context) :
         }
     }
 
-    private fun getAverageCountBetweenDayEntriesWithId(id1: Int, id2: Int): Int {
+    private fun getAverageCountBetweenDayEntriesWithId(id1: Int, id2: Int): Float {
         var currentId = id1
-        var jSum = 0
-        var dayCount = 0
+        var jSum = 0.0F
+        var dayCount = 0.0F
         Log.i(TAG, "id from: $id1 idUntil: $id2")
             while (currentId <= id2) {
                 jSum += getTimeListForDayEntryID(currentId).size
@@ -151,10 +152,10 @@ class DatabaseHelper(context: Context) :
         }
         Log.i( TAG, "Sum: $jSum Count: $dayCount")
         return try {
-            jSum / dayCount
+            (jSum / dayCount)
         } catch (e: ArithmeticException) {
             Log.e(TAG, e.toString())
-            666
+            666.66F
         }
     }
 
