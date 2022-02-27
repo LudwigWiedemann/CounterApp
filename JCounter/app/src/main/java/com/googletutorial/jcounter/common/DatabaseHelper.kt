@@ -6,6 +6,7 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
+import java.lang.ArithmeticException
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -87,6 +88,76 @@ class DatabaseHelper(context: Context) :
         }
     }
 
+    fun getOldestEntry(): DayEntry {
+        return try {
+            val cursor = readableDatabase.query(
+                TABLE_NAME_DAY_ENTRY,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "$COLUMN_ID_DAY_ENTRY ASC",
+                "1"
+            )
+            val lastEntry = getLastEntryFromCursor(cursor)
+            lastEntry.timeList = getTimeListForDayEntryID(lastEntry.id!!)
+            return lastEntry
+        } catch (e: RuntimeException) {
+            Log.e(TAG, "could not execute query in DB: $e")
+            DayEntry(
+                LocalDate.of(0, Month.AUGUST, 1),
+                arrayListOf<TimeEntry>()
+            )
+        }
+    }
+
+    fun getAverageBetweenDates(date1: LocalDate, date2: LocalDate): Int {
+        val id1 = getEntryIdForDate(date1)
+        val id2 = getEntryIdForDate(date2)
+        return getAverageCountBetweenDayEntriesWithId(id1, id2)
+    }
+
+    private fun getEntryIdForDate(date: LocalDate): Int {
+        Log.i(TAG, "date: ${date.year}, ${date.monthValue}, ${date.dayOfMonth}")
+        val cursor = readableDatabase.query(
+            TABLE_NAME_DAY_ENTRY,
+            null,
+            "$COLUMN_DAYOFMONTH = ? AND $COLUMN_MONTH = ? AND $COLUMN_YEAR = ?",
+            arrayOf(date.dayOfMonth.toString(),
+                    date.monthValue.toString(),
+                    date.year.toString(),
+
+            ),
+            null,
+            null,
+            "$COLUMN_ID_DAY_ENTRY DESC",
+        )
+        with(cursor) {
+            moveToFirst()
+            return getInt(getColumnIndexOrThrow(COLUMN_ID_DAY_ENTRY))
+        }
+    }
+
+    private fun getAverageCountBetweenDayEntriesWithId(id1: Int, id2: Int): Int {
+        var currentId = id1
+        var jSum = 0
+        var dayCount = 0
+        Log.i(TAG, "id from: $id1 idUntil: $id2")
+            while (currentId <= id2) {
+                jSum += getTimeListForDayEntryID(currentId).size
+                currentId++
+                dayCount++
+        }
+        Log.i( TAG, "Sum: $jSum Count: $dayCount")
+        return try {
+            jSum / dayCount
+        } catch (e: ArithmeticException) {
+            Log.e(TAG, e.toString())
+            666
+        }
+    }
+
     fun getAllEntriesFromDb(): ArrayList<DayEntry> {
         val cursor = readableDatabase.query(
             TABLE_NAME_DAY_ENTRY,
@@ -149,7 +220,6 @@ class DatabaseHelper(context: Context) :
         }
         return 0
     }
-
 
     private fun getAllEntriesFromCursor(cursor: Cursor?): ArrayList<DayEntry> {
         val list = arrayListOf<DayEntry>()
