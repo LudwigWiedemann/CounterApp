@@ -24,5 +24,12 @@
             android:id="@+id/action_overviewFragment_to_counterFragment"
             app:destination="@id/counterFragment"
             app:popUpTo="@id/navigations" />
+        <action
+            android:id="@+id/action_overviewFragment_to_statFragment"
+            app:destination="@id/statFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/statFragment"
+        android:name="com.googletutorial.jcounter.statistics.StatFragment"
+        android:label="StatFragment" />
 </navigation>

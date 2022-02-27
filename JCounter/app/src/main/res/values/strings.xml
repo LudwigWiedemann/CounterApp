@@ -3,5 +3,8 @@
     <string name="total_count">Total count:</string>
     <string name="today_count">Today count:</string>
     <string name="date_format">%1$s.%2$s.%3$s</string>
-    <string name="avg_format">"%1s to %2s \n Avg: %3s"</string>
+    <string name="avg_format">"start date: %1s \n end date: %2s \n Average: %3s"</string>
+    <string name="btn_end_date">end date</string>
+    <string name="btn_start_date">start date</string>
+    <string name="btn_stats">See statistics</string>
 </resources>
